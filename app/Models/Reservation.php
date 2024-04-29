@@ -10,4 +10,9 @@ class Reservation extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function offre()
+    {
+        return $this->belongsTo(Offre::class, 'offre_id');
+    }
 }

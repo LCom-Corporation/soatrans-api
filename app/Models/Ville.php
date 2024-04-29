@@ -10,4 +10,9 @@ class Ville extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function trajets()
+    {
+        return $this->hasMany(Trajet::class);
+    }
 }

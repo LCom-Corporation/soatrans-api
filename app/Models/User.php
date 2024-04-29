@@ -40,4 +40,28 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function offres()
+    {
+        return $this->hasMany(Offre::class);
+    }
+
+    public function getInfoAuthAttribute ()
+    {
+        return [
+            "id" => $this->id,
+            "nom" => $this->name,
+            "prenom" => $this->prenom,
+            "image" => $this->image,
+            "email" => $this->email,
+            "telephone" => $this->telephone,
+            "sexe" => $this->sexe,
+            "expireIn" => 3600,
+        ];
+    }
 }
