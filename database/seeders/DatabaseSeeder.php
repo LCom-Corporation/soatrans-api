@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            // ClasseSeeder::class,
+            ClasseSeeder::class,
             VilleSeeder::class,
             TrajetSeeder::class,
         ]);
