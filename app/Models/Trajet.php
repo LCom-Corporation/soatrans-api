@@ -20,4 +20,9 @@ class Trajet extends Model
     {
         return $this->belongsTo(Ville::class, 'ville_arrivee_id');
     }
+
+    public function classe()
+    {
+        return $this->belongsTo(Classe::class);
+    }
 }
