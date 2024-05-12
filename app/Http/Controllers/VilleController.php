@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class VilleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Liste de toute les villes
      */
     public function index()
     {

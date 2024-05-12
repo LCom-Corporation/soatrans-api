@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    /**
+     * Authentification de login
+     */
     public function login(Request $request)
     {
 
@@ -44,6 +47,9 @@ class AuthController extends Controller
         ], 401);
     }
 
+    /**
+     * Authentification de registration 
+     */
     public function register(Request $request)
     {
         $vs = Validator::make($request->all(), [

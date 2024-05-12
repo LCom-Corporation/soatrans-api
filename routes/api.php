@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OffreController;
@@ -13,15 +14,20 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::prefix("auth")->controller(AuthController::class)->group(function () {
+    Route::post("'/login", 'login');
+    Route::post("register", "register");
+});
 
 Route::apiResource('ville', VilleController::class);
+Route::get("/trajets/classe", [TrajetController::class , "getListWithoutDoublon"]);
 Route::apiResource('trajet', TrajetController::class);
 Route::apiResource('vehicule', VehiculeController::class);
 Route::apiResource('offre', OffreController::class);
+Route::get('reservation/user', [ReservationController::class, "list"])->middleware("user"); 
 Route::apiResource('reservation', ReservationController::class);
 
 Route::get("/classe" , [ClasseController::class , "index"]);
-Route::get("/trajets/classe", [TrajetController::class , "getListWithoutDoublon"]);
 
 
 Route::put("/reservation/{reservation}/annuler",[ ReservationController::class , "annulation"])->middleware("user"); 

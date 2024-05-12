@@ -89,6 +89,15 @@ class ReservationController extends Controller
         return response()->json(null, 204);
     }
 
+    /**
+     * Liste de reservation d'une personne authentifier
+     */
+    public function list (Request $request)
+    {
+        $reservations = Reservation::with('offre')->where("user_id", $request->user->id)->get();
+        return response()->json($reservations);
+    }
+
     public function annulation(Reservation $reservation)
     {
         //voir si le jour de la reservation est inferieur a 24h

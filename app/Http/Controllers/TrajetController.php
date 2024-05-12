@@ -8,6 +8,51 @@ use Illuminate\Support\Facades\Validator;
 
 class TrajetController extends Controller
 {
+    private function groupTripsByClassAndPrice($trips)
+    {
+        // Initialiser un tableau pour stocker les trajets regroupés
+        $groupedTrips = [];
+
+        // Parcourir chaque trajet et les regrouper par classe et le depart et distination ont le meme prix si la depart  devinent la destination et la destination devien depart
+        foreach ($trips as $trip) {
+            $key = $trip['class'] . $trip['price'] . $trip['origin'] . $trip['destination'];
+            $key2 = $trip['class'] . $trip['price'] . $trip['destination'] . $trip['origin'];
+
+            if (!array_key_exists($key, $groupedTrips) && !array_key_exists($key2, $groupedTrips)) {
+                $groupedTrips[$key] = [
+                    'classe' => $trip['class'],
+                    'tarif' => $trip['price'],
+                    "name" => $trip['name'],
+                ];
+            }
+        }
+
+        // Retourner les trajets regroupés
+        return array_values($groupedTrips);
+    }
+
+    /**
+     * Listes des trajets avec prix et classe
+     */
+    public function getListWithoutDoublon()
+    {
+        $trajets = Trajet::with('villeDepart', 'villeArrivee', "classe")->get();
+        // Créer une collection à partir des trajets
+        $trajets = $trajets->map(function ($trajet) {
+            return [
+                'class' => $trajet->classe->nom,
+                'price' => $trajet->tarif,
+                'origin' => $trajet->villeDepart->nom,
+                'destination' => $trajet->villeArrivee->nom,
+                "name" => $trajet->villeDepart->nom . " < > " . $trajet->villeArrivee->nom,
+            ];
+        });
+
+        // Regrouper les trajets par classe et prix
+        $groupedTrips = $this->groupTripsByClassAndPrice($trajets->toArray());
+
+        return response()->json($groupedTrips);
+    }
     /**
      * Display a listing of the resource.
      */
@@ -90,46 +135,5 @@ class TrajetController extends Controller
         return response()->json(null, 204);
     }
 
-    private function groupTripsByClassAndPrice($trips)
-    {
-        // Initialiser un tableau pour stocker les trajets regroupés
-        $groupedTrips = [];
 
-        // Parcourir chaque trajet et les regrouper par classe et le depart et distination ont le meme prix si la depart  devinent la destination et la destination devien depart
-        foreach ($trips as $trip) {
-            $key = $trip['class'] . $trip['price'] . $trip['origin'] . $trip['destination'];
-            $key2 = $trip['class'] . $trip['price'] . $trip['destination'] . $trip['origin'];
-
-            if (!array_key_exists($key, $groupedTrips) && !array_key_exists($key2, $groupedTrips)) {
-                $groupedTrips[$key] = [
-                    'classe' => $trip['class'],
-                    'tarif' => $trip['price'],
-                    "name" => $trip['name'],
-                ];
-            }
-        }
-
-        // Retourner les trajets regroupés
-        return array_values($groupedTrips);
-    }
-
-    public function getListWithoutDoublon()
-    {
-        $trajets = Trajet::with('villeDepart', 'villeArrivee', "classe")->get();
-        // Créer une collection à partir des trajets
-        $trajets = $trajets->map(function ($trajet) {
-            return [
-                'class' => $trajet->classe->nom,
-                'price' => $trajet->tarif,
-                'origin' => $trajet->villeDepart->nom,
-                'destination' => $trajet->villeArrivee->nom,
-                "name" => $trajet->villeDepart->nom . " < > " . $trajet->villeArrivee->nom,
-            ];
-        });
-
-        // Regrouper les trajets par classe et prix
-        $groupedTrips = $this->groupTripsByClassAndPrice($trajets->toArray());
-
-        return response()->json($groupedTrips);
-    }
 }
