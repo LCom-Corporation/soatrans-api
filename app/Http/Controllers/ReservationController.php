@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Offre;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ReservationController extends Controller
@@ -18,29 +20,66 @@ class ReservationController extends Controller
         return response()->json($reservations);
     }
 
+    public function create(Request $request)
+    {
+        $vs = Validator::make($request->all(), [
+            "ville_depart_id" => "required",
+            "ville_arrive_id" => 'required',
+            "date_depart" => 'required',
+            "classe_id" => 'required',
+        ]);
+
+        if($vs->fails()) return response()->json($vs->errors(), 422);
+
+        $offres = Offre::join('trajets', 'offres.trajet_id', '=', 'trajets.id')
+            ->join("vehicules", "offres.vehicule_id", "=", "vehicules.id")
+            ->where(function ($query) use ($request) {
+                $query->where('trajets.ville_depart_id', $request->ville_depart_id)
+                    ->where('trajets.ville_arrivee_id', $request->ville_arrive_id)
+                    ->where('trajets.classe_id', $request->classe_id)
+                    ->where('offres.date_depart', $request->date_depart);
+            })
+            ->select('offres.*', 'vehicules.*')
+            ->get();
+            
+        return $offres;
+    }
+
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage.mba atao json stringify ilay num_place azafady
      */
     public function store(Request $request)
     {
         $vs = Validator::make($request->all(), [
             'nbr_place' => 'required',
-            "num_place" => 'required',
+            "num_place" => 'required|string',
             'offre_id' => 'required',
             'user_id' =>  'required',
         ]);
 
         if($vs->fails()) return response()->json($vs->errors(), 422);
 
+        $string_place = implode(', ', json_decode($request->num_place));
+        // return response()->json(['string' => $string_place], 200);
         $reservation = Reservation::create([
             'nbr_place' => $request->nbr_place,
             'num_place' => $request->num_place,
             'reference' => 'RES-' . time(), // 'REF-1623678976'
             'date_reservation' => Carbon::now()->format('Y-m-d'),
             'heure_reservation' => Carbon::now()->format('H:i:s'),
-            "statut" => "En attente de payement",
+            "status" => "En attente de payement",
             'offre_id' => $request->offre_id,
             'user_id' => $request->user_id,
+        ]);
+        $offre = Offre::where("id", $request->offre_id)->first();
+        $new_place_take = $offre->place_take ?  $offre->place_take.', '. $string_place : $offre->place_take ;
+        $offre->update([
+            'place_take' => $new_place_take,
+            'place_disponible' => $offre->place_disponible - (int)$request->nbr_place,
+        ]);
+        DB::table("offre_user")->insert([
+            "offre_id" => $offre->id,
+            "user_id" => $request->user_id
         ]);
 
         return response()->json($reservation, 201);

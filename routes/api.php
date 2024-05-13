@@ -25,6 +25,7 @@ Route::apiResource('trajet', TrajetController::class);
 Route::apiResource('vehicule', VehiculeController::class);
 Route::apiResource('offre', OffreController::class);
 Route::get('reservation/user', [ReservationController::class, "list"])->middleware("user"); 
+Route::get('reservation/create', [ReservationController::class, "create"]);
 Route::apiResource('reservation', ReservationController::class);
 
 Route::get("/classe" , [ClasseController::class , "index"]);
