@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OffreController;
+use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\VilleController;
 use App\Http\Controllers\ClasseController;
 use App\Http\Controllers\TrajetController;
@@ -29,6 +30,10 @@ Route::get('reservation/create', [ReservationController::class, "create"]);
 Route::apiResource('reservation', ReservationController::class);
 
 Route::get("/classe" , [ClasseController::class , "index"]);
+
+
+Route::post("/place/set",[ PlaceController::class , "setPlace"]);
+Route::post("/place/unset",[ PlaceController::class , "unSetPlace"]);
 
 
 Route::put("/reservation/{reservation}/annuler",[ ReservationController::class , "annulation"])->middleware("user"); 
