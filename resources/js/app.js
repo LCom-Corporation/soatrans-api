@@ -1,8 +1,9 @@
 import './bootstrap';
 
-window.Echo.private('setPlace.1')
-    .subscribe('.placing', (e) => {
-        console.log("test");
+console.log('Hello World from app.js');
+window.Echo.channel('setPlace.1')
+    .subscribe('SetPlaceEvent', (e) => {
+        console.log("event received");
     })
     .listen('SetPlaceEvent', (e) => {
         console.log(e);

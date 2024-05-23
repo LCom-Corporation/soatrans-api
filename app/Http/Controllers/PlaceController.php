@@ -28,7 +28,7 @@ class PlaceController extends Controller
             ->where('created_at', '>=', now()->subMinutes(5))
             ->get();
         
-        event(new SetPlaceEvent($request->offre_id, $places));
+            SetPlaceEvent::dispatch($request->offre_id, $places);
     }
 
     public function unSetPlace(Request $request)
@@ -47,6 +47,6 @@ class PlaceController extends Controller
             ->where('created_at', '>=', now()->subMinutes(5))
             ->get();
         
-        event(new SetPlaceEvent($request->offre_id, $places));
+            SetPlaceEvent::dispatch($request->offre_id, $places);
     }
 }

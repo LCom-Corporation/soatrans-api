@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SetPlaceEvent;
 use Carbon\Carbon;
 use App\Models\Offre;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use App\Models\PlaceWebsocket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -41,6 +43,18 @@ class ReservationController extends Controller
             })
             ->select('offres.*', 'vehicules.*')
             ->get();
+
+        foreach ($offres as $offre) {
+            $places = PlaceWebsocket::where('offre_id', $offre->id)
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->get();
+
+           try {
+            SetPlaceEvent::dispatch($offre, $places);
+           } catch (\Throwable $th) {
+               return response()->json($th->getMessage(), 500);
+           }
+        }
             
         return $offres;
     }
