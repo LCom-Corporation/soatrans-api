@@ -16,7 +16,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix("auth")->controller(AuthController::class)->group(function () {
-    Route::post("'/login", 'login');
+    Route::post("/login", 'login');
     Route::post("register", "register");
 });
 
@@ -26,6 +26,8 @@ Route::apiResource('trajet', TrajetController::class);
 Route::apiResource('vehicule', VehiculeController::class);
 Route::apiResource('offre', OffreController::class);
 Route::get('reservation/user', [ReservationController::class, "list"])->middleware("user"); 
+Route::get('fidelite/user', [ReservationController::class, "trajetFidelite"])->middleware("user"); 
+Route::get('reservation/historique', [ReservationController::class, "listHistorique"])->middleware("user"); 
 Route::get('reservation/create', [ReservationController::class, "create"]);
 Route::apiResource('reservation', ReservationController::class);
 

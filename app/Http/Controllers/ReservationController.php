@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\SetPlaceEvent;
 use Carbon\Carbon;
 use App\Models\Offre;
+use App\Models\Trajet;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use App\Events\SetPlaceEvent;
+use App\Models\FideliteTaken;
 use App\Models\PlaceWebsocket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -143,12 +145,114 @@ class ReservationController extends Controller
     }
 
     /**
-     * Liste de reservation d'une personne authentifier
+     * Liste de reservation actuellement d'une personne authentifier 
      */
     public function list (Request $request)
     {
-        $reservations = Reservation::with('offre')->where("user_id", $request->user->id)->get();
+        $reservations = Reservation::with('offre')->where("user_id", $request->user->id)
+            ->where("date_reservation", ">=", Carbon::now()->format('Y-m-d'))
+            ->get();
         return response()->json($reservations);
+    }
+
+    /**
+     * Liste de reservation historique d'une personne authentifier 
+     */
+    public function listHistorique (Request $request)
+    {
+        $reservations = Reservation::with('offre')->where("user_id", $request->user->id)
+            ->where("date_reservation", "<", Carbon::now()->format('Y-m-d'))
+            ->get();
+        return response()->json($reservations);
+    }
+
+    private function groupTripsByClassAndPrice($trips)
+    {
+        // Initialiser un tableau pour stocker les trajets regroupés
+        $groupedTrips = [];
+
+        // Parcourir chaque trajet et les regrouper par classe et le depart et distination ont le meme prix si la depart  devinent la destination et la destination devien depart
+        foreach ($trips as $trip) {
+            $key = $trip['class'] . $trip['price'] . $trip['origin'] . $trip['destination'];
+            $key2 = $trip['class'] . $trip['price'] . $trip['destination'] . $trip['origin'];
+
+            if (!array_key_exists($key, $groupedTrips) && !array_key_exists($key2, $groupedTrips)) {
+                $groupedTrips[$key] = [
+                    'classe' => $trip['class'],
+                    'class_id' => $trip['class_id'],
+                    "name" => $trip['name'],
+                    'ids' => [$trip['depart_id'],
+                    $trip['arrivee_id']]                 
+                ];
+            }
+        }
+
+        // Retourner les trajets regroupés
+        return array_values($groupedTrips);
+    }
+
+    /**
+     * Listes des trajets avec prix et classe
+     */
+    public function getListWithoutDoublon()
+    {
+        $trajets = Trajet::with('villeDepart', 'villeArrivee', "classe")->get();
+        // Créer une collection à partir des trajets
+        $trajets = $trajets->map(function ($trajet) {
+            return [
+                'class_id' => $trajet->classe->id,
+                'class' => $trajet->classe->nom,
+                'price' => $trajet->tarif,
+                'origin' => $trajet->villeDepart->nom,
+                'destination' => $trajet->villeArrivee->nom,
+                "name" => $trajet->villeDepart->nom . " < > " . $trajet->villeArrivee->nom,
+                'depart_id' => $trajet->villeDepart->id,
+                'arrivee_id' => $trajet->villeArrivee->id,
+            ];
+        });
+
+        // Regrouper les trajets par classe et prix
+        $groupedTrips = $this->groupTripsByClassAndPrice($trajets->toArray());
+
+        return response()->json($groupedTrips);
+    }
+
+    public function trajetFidelite(Request $request)
+    {
+        $trajets = $this->getListWithoutDoublon();
+        $data = [];
+        
+        foreach ($trajets->original as $trajet) {
+
+            $reservationsCount = Reservation::with('offre')
+                ->join('offres', 'reservations.offre_id', '=', 'offres.id')
+                ->join('trajets', 'offres.trajet_id', '=', 'trajets.id')
+                ->where(function($query) use ($trajet) {
+                    $query
+                          ->where("trajets.classe_id", $trajet["class_id"])
+                          ->whereIn('trajets.ville_depart_id', $trajet["ids"])
+                          ->whereIn('trajets.ville_arrivee_id', $trajet["ids"]);
+                })
+                ->where('reservations.user_id', $request->user->id)
+                ->count();
+
+            $fideliteTaken = FideliteTaken::where('classe_id', $trajet["class_id"])->where('ids', json_encode($trajet["ids"]))->where('user_id', $request->user->id)->first();
+            $fidTaken = 0;
+            if($fideliteTaken) {
+                $fidTaken = $fideliteTaken->points;
+            }
+            unset($trajet['ids']);
+            $data[] = [
+                'trajet' => $trajet,
+                'trajet_effectue' => $reservationsCount,
+                'fidelite' => floor($reservationsCount / 20) - $fidTaken
+            ];
+        }
+        
+    
+        return response()->json($data, 200);
+
+
     }
 
     public function annulation(Reservation $reservation)

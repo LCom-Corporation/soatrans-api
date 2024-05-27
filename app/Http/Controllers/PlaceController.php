@@ -12,16 +12,16 @@ class PlaceController extends Controller
     public function setPlace(Request $request)
     {
         $vs = Validator::make($request->all(), [
-            'places' => 'required|array',
+            'place' => 'required',
             'offre_id' => 'required',
         ]);
 
-        foreach ($request->places as $place) {
+      
             PlaceWebsocket::create([
-                'num_place' => $place,
+                'num_place' => $request->place,
                 'offre_id' => $request->offre_id,
             ]);
-        }
+        
 
         //prendre tous les places de l'offre qui etait creer en moin de 5 minutes
         $places = PlaceWebsocket::where('offre_id', $request->offre_id)
@@ -48,5 +48,6 @@ class PlaceController extends Controller
             ->get();
         
             SetPlaceEvent::dispatch($request->offre_id, $places);
-    }
+
+        }
 }
