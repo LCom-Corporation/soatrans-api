@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             ClasseSeeder::class,
             VilleSeeder::class,
             TrajetSeeder::class,
+            VehiculeSeeder::class,
         ]);
     }
 }

@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\Validator;
 class ReservationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Liste reservation admin.
      */
     public function index()
     {
-        $reservations = Reservation::with('offre')->get();
+        $reservations = Reservation::with('offre')->orderBy('id', 'desc')->get();
         return response()->json($reservations);
     }
 

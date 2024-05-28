@@ -10,6 +10,8 @@ use App\Http\Controllers\ClasseController;
 use App\Http\Controllers\TrajetController;
 use App\Http\Controllers\VehiculeController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\Admin\ItineraryController;
+use App\Http\Controllers\Admin\OffreController as AdminOffreController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -39,3 +41,18 @@ Route::post("/place/unset",[ PlaceController::class , "unSetPlace"]);
 
 
 Route::put("/reservation/{reservation}/annuler",[ ReservationController::class , "annulation"])->middleware("user"); 
+
+// ======================== ADMIN ROUTE ========================
+Route::prefix("admin")->group(function () {
+   Route::controller(ItineraryController::class)->prefix("itinerary")->group(function () {
+       Route::get("/", "index");
+       Route::get("/create", "create");
+       Route::post("/store", "store");
+   });
+
+    Route::controller(AdminOffreController::class)->prefix("offre")->group(function () {
+         Route::get("/", "index");
+         Route::get("/create", "create");
+         Route::post("/store", "store");
+    });
+});
