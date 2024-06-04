@@ -12,6 +12,7 @@ use App\Http\Controllers\VehiculeController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\OffreController as AdminOffreController;
+use App\Http\Controllers\UserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -55,5 +56,12 @@ Route::prefix("admin")->group(function () {
          Route::get("/", "index");
          Route::get("/create", "create");
          Route::post("/store", "store");
+    });
+
+    Route::controller(UserController::class)->prefix("user")->group(function () {
+        Route::get("/", "getUsers");
+        Route::get("/cashier", "getCashiers");
+        Route::get("/guichet", "getGuichets");
+        Route::post("/store", "store");
     });
 });

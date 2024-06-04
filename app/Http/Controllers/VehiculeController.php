@@ -25,6 +25,7 @@ class VehiculeController extends Controller
         $vs = Validator::make($request->all(), [
             'immatriculation' => 'required|string',
             'nbr_place' => 'required|integer',
+            'marque' => 'string',
         ]);
 
         if ($vs->fails()) {

@@ -19,16 +19,17 @@ class OffreController extends Controller
         $data = [];
         foreach($offres as $offre) {
             $data[$offre->reference] = [
+                'id' => $offre->id,
                 'reference' => $offre->reference,
                 'trajet' => $offre->trajet->villeDepart->nom . ' -> ' . $offre->trajet->villeArrivee->nom,
                 'date_depart' => $offre->date_depart,
                 'heure_depart' => $offre->heure_depart,
                 'date_arrivee' => $offre->date_arrivee,
                 'heure_arrivee' => $offre->heure_arrivee,
-                'place_disponible' => $offre->place_disponible,
+                // 'place_disponible' => isset($data[$offre->reference]['place_disponible']) ? $data[$offre->reference]['place_disponible'] .' | '. $offre->place_disponible : $offre->place_disponible,
                 'vehicules' => isset($data[$offre->reference]['vehicules']) ?$data[$offre->reference]['vehicules']  : [],
             ];
-            $data[$offre->reference]['vehicules'][] = $offre->vehicule;
+            $data[$offre->reference]['vehicules'][] = [...$offre->vehicule->toArray(), 'place_disponible' => $offre->place_disponible];
         }
         return response()->json(array_values($data));
     }

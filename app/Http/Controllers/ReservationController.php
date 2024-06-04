@@ -20,8 +20,12 @@ class ReservationController extends Controller
      */
     public function index()
     {
-        $reservations = Reservation::with('offre')->orderBy('id', 'desc')->get();
-        return response()->json($reservations);
+        $reservations = Reservation::with('offre', 'user')->orderBy('id', 'desc')->get();
+        $data = [];
+        foreach($reservations as $reservation) {
+            $data[] = $reservation->data;
+        }
+        return response()->json($data);
     }
 
     public function create(Request $request)
@@ -84,6 +88,7 @@ class ReservationController extends Controller
             'date_reservation' => Carbon::now()->format('Y-m-d'),
             'heure_reservation' => Carbon::now()->format('H:i:s'),
             "status" => "En attente de payement",
+            "prix" => Offre::where("id", $request->offre_id)->first()->trajet->tarif * (int)$request->nbr_place,
             'offre_id' => $request->offre_id,
             'user_id' => $request->user_id,
         ]);
