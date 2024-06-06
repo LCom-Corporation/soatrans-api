@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Authcontroller as AdminAuthcontroller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -64,4 +65,7 @@ Route::prefix("admin")->group(function () {
         Route::get("/guichet", "getGuichets");
         Route::post("/store", "store");
     });
+
+    //admin auth
+    Route::get("/login", [AdminAuthcontroller::class, "login"]);
 });

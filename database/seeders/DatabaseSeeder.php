@@ -19,16 +19,17 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'admin',
+            'email' => 'admin@soatrans-lcom.com',
             'password' => Hash::make('password'),
+            'role' => 'administrateur'
         ]);
 
-        $this->call([
-            ClasseSeeder::class,
-            VilleSeeder::class,
-            TrajetSeeder::class,
-            VehiculeSeeder::class,
-        ]);
+        // $this->call([
+        //     ClasseSeeder::class,
+        //     VilleSeeder::class,
+        //     TrajetSeeder::class,
+        //     VehiculeSeeder::class,
+        // ]);
     }
 }
